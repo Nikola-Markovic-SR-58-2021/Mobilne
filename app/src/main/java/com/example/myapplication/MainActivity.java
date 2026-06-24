@@ -29,6 +29,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+         btnDeleteFirst = findViewById(R.id.btnDeleteFirst);
+        btnDeleteFirst.setOnClickListener(v -> deleteFirstPost());
+
 
         textView3 = findViewById(R.id.textView3);
 
@@ -83,6 +86,65 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        // ── Briše post na prvoj poziciji liste ───────────────────────────────────
+private void deleteFirstPost() {
+    if (postList.isEmpty()) {
+        Toast.makeText(this, "Lista je već prazna!", Toast.LENGTH_SHORT).show();
+        return;
+    }
+
+    Post firstPost = postList.get(0);
+    int postId = firstPost.getId();
+
+    Call<Void> call = RetrofitClient.getInstance()
+            .getApiService()
+            .deletePost(postId);
+
+    call.enqueue(new Callback<Void>() {
+        @Override
+        public void onResponse(Call<Void> call, Response<Void> response) {
+            if (response.isSuccessful()) {
+                postList.remove(0);
+                prikaziPostove();
+                Toast.makeText(MainActivity.this,
+                        "Post \"" + firstPost.getTitle() + "\" obrisan!", Toast.LENGTH_SHORT).show();
+
+                if (postList.isEmpty()) {
+                    posaljiNotifikaciju();
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<Void> call, Throwable t) {
+            postList.remove(0);
+            prikaziPostove();
+            if (postList.isEmpty()) {
+                posaljiNotifikaciju();
+            }
+        }
+    });
+}
+
+// ── Pošalji notifikaciju kada su svi postovi obrisani ────────────────────
+private void posaljiNotifikaciju() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        if (ContextCompat.checkSelfPermission(this,
+                android.Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+    }
+
+    NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Postovi")
+            .setContentText("Nema više postova!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true);
+
+    NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, builder.build());
+}
 
     }  // <-- this was missing, closes onCreate
 
