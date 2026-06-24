@@ -66,5 +66,14 @@
         app:layout_constraintTop_toBottomOf="@id/mySwitch"
         android:background="@color/black"/>
 
+    <!-- Dugme za brisanje prvog posta -->
+    <Button
+        android:id="@+id/btnDeleteFirst"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Obriši prvi post"
+        android:backgroundTint="#F44336"
+        android:layout_marginBottom="16dp"/>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
